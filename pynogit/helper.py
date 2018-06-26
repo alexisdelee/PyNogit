@@ -4,10 +4,34 @@ from json import dumps, loads
 from binascii import hexlify, unhexlify
 from .pyaes import AESModeOfOperationCTR
 
-class Helper:
-    def __init__(self):
-        pass
+class Cipher:
+    @staticmethod
+    def advancedEncryption(data, key):
+        aes = AESModeOfOperationCTR(key)
+        ciphertext = aes.encrypt(data)
+        return Helper.bytesToHex(ciphertext)
 
+    @staticmethod
+    def advancedDecryption(ciphertext, key):
+        aes = AESModeOfOperationCTR(key)
+        data = Helper.hexToBytes(ciphertext)
+        return aes.decrypt(data)
+
+    @staticmethod
+    def xor(data, key):
+        return "".join([ chr(ord(ciphertextA) ^ ord(ciphertextB)) for (ciphertextA, ciphertextB) in zip(data, key) ])
+
+    @staticmethod
+    def simpleEncyption(data, key):
+        ciphertext = Cipher.xor(data, key).encode("utf-8")
+        return Helper.bytesToHex(ciphertext)
+
+    @staticmethod
+    def simpleDecryption(ciphertext, key):
+        ciphertext = Helper.hexToBytes(ciphertext)
+        return Cipher.xor(ciphertext.decode("utf-8"), key)
+
+class Helper:
     @staticmethod
     def hash(data):
         return sha1(data.encode("utf-8")).hexdigest()
@@ -32,16 +56,4 @@ class Helper:
     def hexToBytes(hex):
         return unhexlify(hex.encode())
 
-    @staticmethod
-    def encrypt(data, key):
-        aes = AESModeOfOperationCTR(key)
-        ciphertext = aes.encrypt(data)
-        return Helper.bytesToHex(ciphertext)
-        # return hexlify(ciphertext).decode()
-
-    @staticmethod
-    def decrypt(ciphertext, key):
-        aes = AESModeOfOperationCTR(key)
-        # data = unhexlify(ciphertext.encode())
-        data = Helper.hexToBytes(ciphertext)
-        return aes.decrypt(data)
+    Cipher = Cipher

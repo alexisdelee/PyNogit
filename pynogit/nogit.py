@@ -50,6 +50,7 @@ class NoGit:
 
         self.__database = Helper.hash(database)
         self.__username = Helper.hash(username)
+        self.__rawCredentials = credentials
         self.__credentials = None if credentials is None else Helper.hash(credentials)
         self.__aes = None
 
@@ -61,9 +62,11 @@ class NoGit:
         else:
             data = self.__get_collection__("__credentials__")
             if data.get("username", None) == self.__username and data.get("password", None) == self.__credentials:
-                print(data)
+                print("data", data)
                 self.__aes = data.get("aes", None)
-                self.__aes = None if self.__aes is None else Helper.hexToBytes(self.__aes)
+                if self.__aes is not None:
+                    key = Helper.Cipher.simpleDecryption(self.__aes.rjust(64), credentials.rjust(64))
+                    self.__aes = Helper.hexToBytes(key)
                 return
 
             raise Exception("bad credentials")
@@ -73,14 +76,14 @@ class NoGit:
         self.__save__({
             "username": self.__username,
             "password": self.__credentials,
-            "aes": None if self.__credentials is None else Helper.bytesToHex(self.__aes)
+            "aes": None if self.__aes is None else Helper.Cipher.simpleEncyption(Helper.bytesToHex(self.__aes).rjust(64), self.__rawCredentials.rjust(64))
         }, "__credentials__")
 
     def __set_collection__(self, data, collection):
         assert type(data) is str
         assert type(collection) is str
 
-        data = data if collection == "__credentials__" or self.__aes is None else Helper.encrypt(data, self.__aes)
+        data = data if collection == "__credentials__" or self.__aes is None else Helper.Cipher.advancedEncryption(data, self.__aes)
         blob = Document(data).indexing()
         return {
             "blob": blob,
@@ -92,9 +95,9 @@ class NoGit:
 
         try:
             data = Collection.restore(Helper.readable(self.__username), self.__database, Helper.readable(Helper.hash(collection)))
-            data = data if collection == "__credentials__" or self.__aes is None else Helper.decrypt(data, self.__aes)
+            data = data if collection == "__credentials__" or self.__aes is None else Helper.Cipher.advancedDecryption(data, self.__aes)
             return Helper.JSONDecoding(data)
-        except Exception:
+        except Exception as e:
             return {}
 
     def __check_expire__(self, key, collection, data):
@@ -261,9 +264,12 @@ class NoGit:
         assert type(key) is str
         assert type(collection) is str
 
+        t = time()
         data = self.__get_collection__(collection)
+
         if self.exists(key, collection, data):
-            return data[key]["__expire__"]
+            delta = int(data[key]["__updated_at__"] + data[key]["__expire__"] - t)
+            return -1 if delta < 0 else delta
         return -1
 
     def type(self, key, collection):
