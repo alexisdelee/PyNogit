@@ -326,3 +326,12 @@ class NoGit:
 
     def release(self, tag):
         Transaction(None, None, Helper.readable(self.__username)).release(tag)
+
+    def getAllTransactions(self, withTags = False):
+        assert type(withTags) is bool
+
+        commits = Branch.getAllCommits(Helper.readable(self.__username))
+        if withTags:
+            for i in range(0, len(commits)):
+                commits[i] = [ commits[i], Commit.getAllTags(commits[i]) ]
+        return commits

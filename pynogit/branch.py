@@ -13,5 +13,9 @@ class Branch(Git):
         except Exception:
             return False
 
+    @staticmethod
+    def getAllCommits(branch):
+        return Git().shell("git log --reflog --oneline --source {0} --pretty=%H".format(branch)).split()
+
     def attach(self, branch):
         self.shell("git update-ref refs/heads/{0} {1}".format(branch, self.__commit))

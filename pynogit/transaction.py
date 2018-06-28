@@ -13,10 +13,11 @@ class Transaction(Git):
     def savepoint(self, tag):
         assert type(tag) is str
 
+        rawTag = tag
         tag = Helper.readable(Helper.hash(tag))
         commit = Commit.getLatest(self.__username)
 
-        Commit.tag(commit, tag)
+        Commit.tag(commit, tag, rawTag)
         return Transaction(commit, tag, self.__username)
 
     def rollback(self, tag = None):

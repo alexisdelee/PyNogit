@@ -12,8 +12,8 @@ class Commit(Git):
         return Git().shell("git show --pretty=format:\"%H\" --no-patch {0}".format(branch))
 
     @staticmethod
-    def tag(commit, tag):
-        Git().shell("git tag -a {0} {1} -m {0}".format(tag, commit))
+    def tag(commit, tag, rawTag):
+        Git().shell("git tag -a {0} {1} -m {2}".format(tag, commit, rawTag))
 
     @staticmethod
     def untagged(tag):
@@ -22,6 +22,10 @@ class Commit(Git):
     @staticmethod
     def getByTag(tag):
         return Git().shell("git rev-list -n 1 {0}".format(tag))
+
+    @staticmethod
+    def getAllTags(commit):
+        return Git().shell("git tag --contains {0}".format(commit)).split()
 
     def commit(self):
         if self.__parentTree is None:
