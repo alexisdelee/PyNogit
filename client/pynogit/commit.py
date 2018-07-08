@@ -27,8 +27,19 @@ class Commit(Git):
     def getAllTags(commit):
         return Git().shell("git tag --contains {0}".format(commit)).split()
 
+    @staticmethod
+    def readTag(tag):
+        tag = Git().shell("git tag -n1 {0}".format(tag)).split()
+        return None if len(tag) is 0 else " ".join(tag[1:])
+
+    @staticmethod
+    def getAllCollections(commit):
+        tree = Git().shell("git ls-tree {0}".format(commit)).split()
+        if len(tree) is not 4:
+            return []
+        return Git().shell("git cat-file -p {0}".format(tree[2])).split()[2::4]
+
     def commit(self):
         if self.__parentTree is None:
             return self.shell("git commit-tree {0}".format(self.__tree), str(uuid4()))
-        else:
-            return self.shell("git commit-tree {0] -p {1}".format(self.__tree, self.__parentTree), str(uuid4()))
+        return self.shell("git commit-tree {0] -p {1}".format(self.__tree, self.__parentTree), str(uuid4()))

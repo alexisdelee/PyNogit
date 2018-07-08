@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Collection</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/custom.css') }}">
+  </head>
+  <body>
+    <table id="app">
+      <thead>
+        <tr>
+          <th colspan="5">Collection's data [ <small><i v-html="collection"></i></small> ]</th>
+        </tr>
+        <tr>
+          <th>#</th>
+          <th>Value</th>
+          <th colspan="2"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(blob, key) in blobs" :key="blob">
+          <td v-html="key"></td>
+          <td v-html="blob.value"></td>
+          <td>
+            <i class="material-icons button edit" @click="edit(blob, key)">edit</i>
+            <i class="material-icons button delete" @click="remove(key)">delete</i>
+          </td>
+          <td>
+            <a @click.prevent="setExpire(blob, key)" href="#">
+              <img v-if="blob.__expire__ > -1" :title="new Date(blob.__updated_at__ + blob.__expire__ * 1000)" src="{{ url_for('static', filename='img/expiration.png') }}">
+              <img v-else src="{{ url_for('static', filename='img/plus.png') }}">
+            </a>
+          </td>
+          <td v-else></td>
+        </tr>
+      </tbody>
+      <tfoot v-if="editionMode.enable">
+        <tr>
+          <td id="editionMode" :contenteditable="editionMode.enable" colspan="4" @keydown.enter.prevent @keyup.enter="edition" v-html="editionMode.value"></td>
+        </tr>
+        <tr class="error" v-if="editionMode.error">
+          <td colspan="5">Invalid syntax</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <script type="application/javascript" src="{{ url_for('static', filename='js/vuejs.min.js') }}"></script>
+    <script type="application/javascript">
+      const blobs = (obj => {
+        Object.keys(obj).forEach(key => {
+          obj[key].__created_at__ = obj[key].__created_at__ * 1000;
+          obj[key].__updated_at__ = obj[key].__updated_at__ * 1000;
+        });
+
+        return obj;
+      })(JSON.parse('{{ data | tojson | safe }}'));
+      console.log(blobs);
+
+      new Vue({
+        el: "#app",
+        data: {
+          collection: "ingredients",
+          editionMode: {
+            enable: false,
+            blob: null,
+            key: null,
+            value: null,
+            error: false
+          },
+          blobs: blobs
+        },
+        methods: {
+          _post: function(url, body, method = "POST") {
+            return fetch(url, {
+              method: method,
+              headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify(body)
+            });
+          },
+          _delete: function(url, body) {
+            return this._post(url, body, "DELETE");
+          },
+          edit: function(blob, key) {
+            this.editionMode = {
+              enable: true,
+              blob: blob,
+              key: key,
+              value: blob.value,
+              error: false
+            };
+          },
+          parse: function(value) {
+            try {
+              return JSON.parse("{\"a\": " + value + "}");
+            } catch(e) {
+              return null;
+            }
+          },
+          edition: function(e) {
+            this.editionMode.value = document.querySelector("#editionMode").textContent;
+            this.editionMode.error = false;
+
+            const response = this.parse(this.editionMode.value);
+            if (response === null) {
+              this.editionMode.error = true;
+            } else {
+              return this.submit();
+            }
+          },
+          submit: function() {
+            // console.log(this.editionMode.key, this.parse(this.editionMode.value).a);
+            // send request to service
+            this.editionMode.blob.value = this.parse(this.editionMode.value).a;
+            this.editionMode.enable = false;
+          },
+          remove: async function(key) {
+            const response = await this._delete("/blobs", {
+              collection: this.collection,
+              key: key
+            });
+
+            if (response.status === 200) {
+              const data = await response.json();
+              if (data.error) {
+                alert(data.error);
+              }
+
+              window.location.reload();
+            }
+
+            {#this.$delete(this.blobs, key);#}
+          },
+          setExpire: async function (blob, key) {
+            do {
+              var seconds = prompt("Set seconds before expiration or -1");
+              if (!seconds) {
+                return;
+              } else if (isNaN(seconds)) {
+                continue;
+              }
+
+              seconds = parseInt(seconds);
+            } while(isNaN(seconds) || (isNaN(seconds) === false && seconds < -1));
+
+            const response = await this._post("/blobs/expire", {
+              collection: this.collection,
+              key: key,
+              seconds: seconds
+            });
+
+            if (response.status === 200) {
+              const data = await response.json();
+              if (data.error) {
+                alert(data.error);
+              }
+
+              window.location.reload();
+            }
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

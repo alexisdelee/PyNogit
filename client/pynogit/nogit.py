@@ -78,6 +78,7 @@ class NoGit:
             "password": self.__credentials,
             "aes": None if self.__aes is None else Helper.Cipher.simpleEncyption(Helper.bytesToHex(self.__aes).rjust(64), self.__rawCredentials.rjust(64))
         }, "__credentials__")
+        self.savepoint("default")
 
     def __set_collection__(self, data, collection):
         assert type(data) is str
@@ -111,6 +112,18 @@ class NoGit:
         if self.exists(key, collection, data):
             if data[key]["__expire__"] is not -1 and (t - data[key]["__updated_at__"] > data[key]["__expire__"]):
                 return True
+        return False
+
+    def __expire__(self, key, collection, seconds):
+        assert type(key) is str
+        assert type(collection) is str
+        assert type(seconds) is int
+
+        data = self.__get_collection__(collection)
+        if self.exists(key, collection, data):
+            data[key] = Structure(data[key]["value"], seconds, data[key]).abstraction()
+            self.__save__(data, collection)
+            return True
         return False
 
     def __delete__(self, key, collection, data = None):
@@ -272,6 +285,16 @@ class NoGit:
             return -1 if delta < 0 else delta
         return -1
 
+    def expire(self, key, collection, seconds):
+        assert type(seconds) is int
+
+        if seconds > -1:
+            return self.__expire__(key, collection, seconds)
+        return False
+
+    def persistent(self, key, collection):
+        self.__expire__(key, collection, -1)
+
     def type(self, key, collection):
         assert type(key) is str
         assert type(collection) is str
@@ -331,7 +354,15 @@ class NoGit:
         assert type(withTags) is bool
 
         commits = Branch.getAllCommits(Helper.readable(self.__username))
-        if withTags:
-            for i in range(0, len(commits)):
-                commits[i] = [ commits[i], Commit.getAllTags(commits[i]) ]
+        for i in range(0, len(commits)):
+            commits[i] = {
+                "ref": commits[i],
+                "tags": list(map(lambda reftag: Commit.readTag(reftag), Commit.getAllTags(commits[i]))) if withTags else []
+            }
+
         return commits
+
+    def getAllCollections(self, commit):
+        assert type(commit) is str
+
+        return Commit.getAllCollections(commit)

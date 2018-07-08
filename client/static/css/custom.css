@@ -1,0 +1,88 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #333;
+}
+
+table {
+  text-align: left;
+  line-height: 40px;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 2px solid #316f9d;
+  width: 500px;
+  margin: 50px auto;
+  border-radius: .25rem;
+}
+
+thead tr:first-child {
+  background: #316f9d;
+  color: #fff;
+  border: none;
+}
+
+th:first-child,
+td:first-child {
+  padding: 0 15px 0 20px;
+}
+
+thead tr:last-child th {
+  border-bottom: 3px solid #ddd;
+}
+
+tbody tr:hover {
+  background-color: #f2f2f2;
+  cursor: default;
+}
+
+tbody tr:last-child td {
+  border: none;
+}
+
+thead th, tbody td {
+  border-bottom: 1px solid #ddd;
+  text-align: center
+}
+
+td:nth-child(3),
+td:last-child {
+  text-align: right;
+  padding-right: 10px;
+}
+
+td:last-child img {
+  width: 16px;
+}
+
+.button {
+  color: #aaa;
+  cursor: pointer;
+  vertical-align: middle;
+  margin-top: -4px;
+}
+
+.edit:hover {
+  color: #0a79df;
+}
+
+.delete:hover {
+  color: #dc2a2a;
+}
+
+tfoot tr:first-child {
+  background: #ffce4b;
+}
+
+tfoot tr.error {
+  background: #dc2a2a;
+  color: #fff;
+}
+
+tfoot td {
+  text-align: left !important;
+}

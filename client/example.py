@@ -10,13 +10,9 @@ nogit = NoGit(username="master", database="mcdo")
 
 nogit.mset({ "a": 12, "b": 20 }, "ingredients")
 print(nogit.get("a", "ingredients"))
-nogit.mset({ "a": 13, "b": 20 }, "products")
-print(nogit.get("a", "products"))
 
-# view all commits git: log --reflog --oneline --source 4vimquqvtrijmnmigqjpjspnjuttruovorokmurt
-# get all tags from a commit: git tag --contains a1ae7cb
+# nogit.rpush("c", [ 3 ], "ingredients")
+nogit.expire("c", "ingredients", 10000)
+print(nogit.get("c", "ingredients"))
 
-transactions = nogit.getAllTransactions(True)
-print(transactions)
-
-nogit.savepoint("test")
+# nogit.savepoint("test")
