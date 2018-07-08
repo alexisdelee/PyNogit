@@ -70,7 +70,7 @@
           blobs: blobs
         },
         methods: {
-          _post: function(url, body, method = "POST") {
+          _put: function(url, body, method = "PUT") {
             return fetch(url, {
               method: method,
               headers: {
@@ -81,7 +81,7 @@
             });
           },
           _delete: function(url, body) {
-            return this._post(url, body, "DELETE");
+            return this._put(url, body, "DELETE");
           },
           edit: function(blob, key) {
             this.editionMode = {
@@ -110,11 +110,24 @@
               return this.submit();
             }
           },
-          submit: function() {
+          submit: async function() {
             // console.log(this.editionMode.key, this.parse(this.editionMode.value).a);
-            // send request to service
             this.editionMode.blob.value = this.parse(this.editionMode.value).a;
-            this.editionMode.enable = false;
+
+            const response = await this._put("/blobs", {
+              collection: this.collection,
+              key: this.editionMode.key,
+              value: this.editionMode.blob.value
+            });
+
+            if (response.status === 200) {
+              const data = await response.json();
+              if (data.error) {
+                alert(data.error);
+              }
+
+              window.location.reload();
+            }
           },
           remove: async function(key) {
             const response = await this._delete("/blobs", {
@@ -145,7 +158,7 @@
               seconds = parseInt(seconds);
             } while(isNaN(seconds) || (isNaN(seconds) === false && seconds < -1));
 
-            const response = await this._post("/blobs/expire", {
+            const response = await this._put("/blobs/expire", {
               collection: this.collection,
               key: key,
               seconds: seconds

@@ -11,7 +11,7 @@ nogit = NoGit(username="master", database="mcdo")
 nogit.mset({ "a": 12, "b": 20 }, "ingredients")
 print(nogit.get("a", "ingredients"))
 
-# nogit.rpush("c", [ 3 ], "ingredients")
+nogit.rpush("c", [ 3 ], "ingredients")
 nogit.expire("c", "ingredients", 10000)
 print(nogit.get("c", "ingredients"))
 

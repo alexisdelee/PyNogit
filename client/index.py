@@ -20,9 +20,29 @@ def collection(collection):
     blobs = nogit.__get_collection__(collection)
     return render_template("collection.html", data=blobs)
 
-# POST
+# PUT
 
-@app.route("/blobs/expire", methods=["POST"])
+@app.route("/blobs", methods=["PUT"])
+def add_blob():
+    try:
+        body = Helper.JSONDecoding(request.data)
+        assert type(body.get("key")) is str
+        assert type(body.get("value")) in [ int, float, str, list ]
+        assert type(body.get("collection")) is str
+
+        nogit = NoGit(username="master", database="mcdo")
+        if type(body.get("value")) is list:
+            nogit.delete(body.get("key"), body.get("collection"))
+            nogit.lpush(body.get("key"), body.get("value"), body.get("collection"))
+        else:
+            nogit.set(body.get("key"), body.get("value"), body.get("collection"))
+        return Helper.JSONEncoding({ })
+    except AssertionError:
+        return Helper.JSONEncoding({ "error": "bad type" })
+    except Exception as e:
+        return Helper.JSONEncoding({ "error": str(e) })
+
+@app.route("/blobs/expire", methods=["PUT"])
 def expire_blob():
     try:
         body = Helper.JSONDecoding(request.data)

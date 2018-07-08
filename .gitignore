@@ -1,6 +1,6 @@
 .idea/
 client/.idea/
-pynogit/__pycache__/
-pynogit/client/__pycache__/
-pynogit/client/pyaes/__pycache__/
+client/pynogit/__pycache__/
+client/pynogit/pyaes/__pycache__/
+client/__pycache__/
 bkgit/
