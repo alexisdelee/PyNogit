@@ -62,7 +62,6 @@ class NoGit:
         else:
             data = self.__get_collection__("__credentials__")
             if data.get("username", None) == self.__username and data.get("password", None) == self.__credentials:
-                print("data", data)
                 self.__aes = data.get("aes", None)
                 if self.__aes is not None:
                     key = Helper.Cipher.simpleDecryption(self.__aes.rjust(64), credentials.rjust(64))
@@ -97,6 +96,7 @@ class NoGit:
         try:
             data = Collection.restore(Helper.readable(self.__username), self.__database, Helper.readable(Helper.hash(collection)))
             data = data if collection == "__credentials__" or self.__aes is None else Helper.Cipher.advancedDecryption(data, self.__aes)
+
             return Helper.JSONDecoding(data)
         except Exception as e:
             return {}
@@ -191,11 +191,12 @@ class NoGit:
         assert type(data) is dict or data is None
 
         data = self.__get_collection__(collection) if data is None else data
-        try:
-            data[key]
-            return True
-        except LookupError:
-            return False
+        # try:
+        #     data[key]
+        #     return True
+        # except LookupError:
+        #     return False
+        return data.get(key)
 
     def mset(self, items, collection, expire = None):
         assert type(items) is dict
@@ -240,6 +241,33 @@ class NoGit:
 
     def get(self, key, collection):
         return self.mget([ key ], collection)[ key ]
+
+    def lrange(self, key, a, b, collection):
+        assert type(key) is str
+        assert type(a) is int
+        assert type(b) is int
+        assert type(collection) is str
+
+        data = self.__get_collection__(collection)
+        if self.exists(key, collection, data) is None:
+            return None
+        else:
+            if self.__check_expire__(key, collection, data):
+                self.__delete__(key, collection, data)
+                return None
+
+            for i in range(a, b - a):
+                if data[key]["__datatype__"] & Structure.list:
+                    return data[key]["value"][a:b]
+                else:
+                    raise Exception("bad type: expected list")
+
+        # if self.exists(key, collection, data):
+        #     if data[key]["__datatype__"] & Structure.list:
+        #         return data[key]["value"][a:b]
+        #     else:
+        #         raise Exception("bad type: expected list")
+        # return None
 
     def incrby(self, key, step, collection):
         assert type(key) is str
@@ -323,20 +351,6 @@ class NoGit:
 
     def rpop(self, key, collection):
         return self.__pop__(key, False, collection)
-
-    def lrange(self, key, a, b, collection):
-        assert type(key) is str
-        assert type(a) is int
-        assert type(b) is int
-        assert type(collection) is str
-
-        data = self.__get_collection__(collection)
-        if self.exists(key, collection, data):
-            if data[key]["__datatype__"] & Structure.list:
-                return data[key]["value"][a:b]
-            else:
-                raise Exception("bad type: expected list")
-        return None
 
     def begin(self):
         return Transaction(None, None, Helper.readable(self.__username))

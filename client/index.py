@@ -1,4 +1,5 @@
-from flask import Flask, render_template, redirect, request
+from functools import wraps
+from flask import Flask, render_template, redirect, url_for, request
 from flask_cors import CORS
 from pynogit import NoGit
 from pynogit.helper import Helper
@@ -16,7 +17,7 @@ authentication = {
     "instance": None
 }
 
-# GET
+# DECORATORS
 
 @app.route("/", methods=["GET"])
 def home():
@@ -26,7 +27,18 @@ def home():
         "database": "" if authentication["database"] is None else authentication["database"]
     })
 
+# GET
+
+def require_authentication(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        if authentication["instance"] is None:
+            return redirect(url_for("home"))
+        return f(*args, **kwargs)
+    return wrap
+
 @app.route("/collections/<collection>", methods=["GET"])
+@require_authentication
 def collection(collection):
     blobs = authentication["instance"].__get_collection__(collection)
     return render_template("collection.html", data = {
@@ -39,7 +51,6 @@ def collection(collection):
 def sign():
     try:
         body = Helper.JSONDecoding(request.data)
-        print(body)
         assert type(body.get("username")) is str
         assert type(body.get("password")) is str or body.get("password") is None
         assert type(body.get("database")) is str
@@ -64,6 +75,7 @@ def sign():
 # PUT
 
 @app.route("/blobs", methods=["PUT"])
+@require_authentication
 def add_blob():
     try:
         body = Helper.JSONDecoding(request.data)
@@ -83,6 +95,7 @@ def add_blob():
         return Helper.JSONEncoding({ "error": str(e) })
 
 @app.route("/blobs/expire", methods=["PUT"])
+@require_authentication
 def expire_blob():
     try:
         body = Helper.JSONDecoding(request.data)
@@ -100,6 +113,7 @@ def expire_blob():
 # DELETE
 
 @app.route("/blobs", methods=["DELETE"])
+@require_authentication
 def delete_blob():
     try:
         body = Helper.JSONDecoding(request.data)
