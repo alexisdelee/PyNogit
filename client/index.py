@@ -8,17 +8,58 @@ app.config.from_object(__name__)
 
 CORS(app)
 
+authentication = {
+    "username": None,
+    "password": None,
+    "database": None,
+    "collection": None,
+    "instance": None
+}
+
 # GET
 
 @app.route("/", methods=["GET"])
 def home():
-    return render_template("home.html")
+    return render_template("home.html", data = {
+        "username": "" if authentication["username"] is None else authentication["username"],
+        "password": "" if authentication["password"] is None else authentication["password"],
+        "database": "" if authentication["database"] is None else authentication["database"]
+    })
 
 @app.route("/collections/<collection>", methods=["GET"])
 def collection(collection):
-    nogit = NoGit(username="master", database="mcdo")
-    blobs = nogit.__get_collection__(collection)
-    return render_template("collection.html", data=blobs)
+    blobs = authentication["instance"].__get_collection__(collection)
+    return render_template("collection.html", data = {
+        "collection": collection,
+        "blobs": blobs
+    })
+
+# POST
+@app.route("/sign", methods=["POST"])
+def sign():
+    try:
+        body = Helper.JSONDecoding(request.data)
+        print(body)
+        assert type(body.get("username")) is str
+        assert type(body.get("password")) is str or body.get("password") is None
+        assert type(body.get("database")) is str
+        assert type(body.get("collection")) is str
+
+        authentication["username"] = body.get("username")
+        authentication["password"] = body.get("password")
+        authentication["database"] = body.get("database")
+
+        if body.get("password") is None:
+            authentication["instance"] = NoGit(username=body.get("username"), database=body.get("database"))
+        else:
+            authentication["instance"] = NoGit(username=body.get("username"), credentials=body.get("password"), database=body.get("database"))
+
+        return Helper.JSONEncoding({ "status": True })
+    except AssertionError:
+        return Helper.JSONEncoding({ "error": "bad type" })
+    except Exception as e:
+        print(e)
+        return Helper.JSONEncoding({ "error": str(e) })
 
 # PUT
 
@@ -30,12 +71,11 @@ def add_blob():
         assert type(body.get("value")) in [ int, float, str, list ]
         assert type(body.get("collection")) is str
 
-        nogit = NoGit(username="master", database="mcdo")
         if type(body.get("value")) is list:
-            nogit.delete(body.get("key"), body.get("collection"))
-            nogit.lpush(body.get("key"), body.get("value"), body.get("collection"))
+            authentication["instance"].delete(body.get("key"), body.get("collection"))
+            authentication["instance"].lpush(body.get("key"), body.get("value"), body.get("collection"))
         else:
-            nogit.set(body.get("key"), body.get("value"), body.get("collection"))
+            authentication["instance"].set(body.get("key"), body.get("value"), body.get("collection"))
         return Helper.JSONEncoding({ })
     except AssertionError:
         return Helper.JSONEncoding({ "error": "bad type" })
@@ -50,8 +90,7 @@ def expire_blob():
         assert type(body.get("collection")) is str
         assert type(body.get("seconds")) is int
 
-        nogit = NoGit(username="master", database="mcdo")
-        response = nogit.__expire__(body.get("key"), body.get("collection"), body.get("seconds"))
+        response = authentication["instance"].__expire__(body.get("key"), body.get("collection"), body.get("seconds"))
         return Helper.JSONEncoding({ "status": response })
     except AssertionError:
         return Helper.JSONEncoding({ "error": "bad type" })
@@ -67,8 +106,7 @@ def delete_blob():
         assert type(body.get("key")) is str
         assert type(body.get("collection")) is str
 
-        nogit = NoGit(username="master", database="mcdo")
-        response = nogit.delete(body.get("key"), body.get("collection"))
+        response = authentication["instance"].delete(body.get("key"), body.get("collection"))
         return Helper.JSONEncoding({"status": response})
     except AssertionError:
         return Helper.JSONEncoding({ "error": "bad type" })

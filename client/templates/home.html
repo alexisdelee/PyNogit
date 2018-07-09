@@ -1,15 +1,92 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <title>Home</title>
+  <head>
+    <meta charset="utf-8">
+    <title>Home</title>
 
-        <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
-    </head>
-    <body>
-        <script type="application/javascript" src="{{ url_for('static', filename='js/vuejs.min.js') }}"></script>
-        <script type="application/javascript">
-            // do something
-        </script>
-    </body>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/csspin-morph.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/loader.css') }}">
+    <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+  </head>
+  <body>
+    <form id="app">
+      <div class="container">
+        <div class="bloc green">
+          <input type="text" placeholder="username" v-model="username" @keyup.enter="submit">
+        </div>
+        <div class="bloc grey">
+          <input type="password" placeholder="password" v-model="password" @keyup.enter="submit">
+        </div>
+        <div class="bloc green">
+          <input type="text" placeholder="database" v-model="database" @keyup.enter="submit">
+        </div>
+        <div class="bloc grey">
+          <input type="text" placeholder="collection" v-model="collection" @keyup.enter="submit">
+        </div>
+        <div class="bloc submit" @click="submit">
+          <input type="button" value="LOGIN">
+        </div>
+      </div>
+
+      <div v-if="loading" class="loader">
+        <div class="cp-spinner cp-morph"></div>
+      </div>
+    </form>
+
+    <script type="application/javascript" src="{{ url_for('static', filename='js/vuejs.min.js') }}"></script>
+    <script type="application/javascript">
+      const data = JSON.parse('{{ data | tojson | safe }}');
+
+      new Vue({
+        el: "#app",
+        data: {
+          loading: false,
+          username: data.username,
+          password: data.password,
+          database: data.database,
+          collection: ""
+        },
+        methods: {
+          _post: function(url, body) {
+            this.loading = true;
+            return fetch(url, {
+              method: "POST",
+              headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify(body)
+            });
+          },
+          submit: async function() {
+            this.username = this.username.trim();
+            this.password = this.password.trim();
+            this.database = this.database.trim();
+            this.collection = this.collection.trim();
+
+            if (!!this.username && !!this.database && !!this.collection) {
+              const response = await this._post("/sign", {
+                username: this.username,
+                password: this.password || null,
+                database: this.database,
+                collection: this.collection
+              });
+
+              if (response.status === 200) {
+                const data = await response.json();
+                if (data.error) {
+                  this.loading = false;
+                  return alert(data.error);
+                }
+
+                window.location.href = "/collections/" + this.collection;
+              }
+            } else {
+              alert("username, database and collection fields are required");
+            }
+          }
+        }
+      });
+    </script>
+  </body>
 </html>

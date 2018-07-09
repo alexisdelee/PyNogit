@@ -1,0 +1,54 @@
+form {
+  width: 30%;
+  margin: 0 auto;
+}
+
+form .container {
+  padding: 18% 2.9em;
+  text-align: center;
+}
+
+form .bloc {
+  padding: 1.8em 0;
+}
+
+.green {
+  background: #4daf7c;
+}
+
+.grey {
+  background: url("/static/img/double_triangle.png") no-repeat 170px 0 #404141;
+}
+
+.grey.secondary {
+  background: #404141;
+}
+
+form input[type="text"],
+form input[type="password"],
+form input[type="button"] {
+  border: 1px solid #fff;
+  padding: 0.5em 0.5em 0.5em 0.5em;
+  color: #fff;
+  font-size: 20px;
+  outline: none;
+  background: none;
+  -webkit-appearance: none;
+  font-weight: 400;
+  width: 78%;
+  text-align: center;
+}
+
+form input[type="button"] {
+  border: none;
+  cursor: pointer;
+}
+
+.submit {
+  background: url("/static/img/triangle.png") no-repeat 170px -1px #316f9d;
+}
+
+.submit:hover {
+  background: url("/static/img/triangle.png") no-repeat 170px -1px #eac85d;
+  cursor: pointer;
+}

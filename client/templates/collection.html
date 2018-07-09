@@ -3,63 +3,73 @@
   <head>
     <meta charset="utf-8">
     <title>Collection</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/custom.css') }}">
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/csspin-morph.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/loader.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/collection.css') }}">
   </head>
   <body>
-    <table id="app">
-      <thead>
-        <tr>
-          <th colspan="5">Collection's data [ <small><i v-html="collection"></i></small> ]</th>
-        </tr>
-        <tr>
-          <th>#</th>
-          <th>Value</th>
-          <th colspan="2"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(blob, key) in blobs" :key="blob">
-          <td v-html="key"></td>
-          <td v-html="blob.value"></td>
-          <td>
-            <i class="material-icons button edit" @click="edit(blob, key)">edit</i>
-            <i class="material-icons button delete" @click="remove(key)">delete</i>
-          </td>
-          <td>
-            <a @click.prevent="setExpire(blob, key)" href="#">
-              <img v-if="blob.__expire__ > -1" :title="new Date(blob.__updated_at__ + blob.__expire__ * 1000)" src="{{ url_for('static', filename='img/expiration.png') }}">
-              <img v-else src="{{ url_for('static', filename='img/plus.png') }}">
-            </a>
-          </td>
-          <td v-else></td>
-        </tr>
-      </tbody>
-      <tfoot v-if="editionMode.enable">
-        <tr>
-          <td id="editionMode" :contenteditable="editionMode.enable" colspan="4" @keydown.enter.prevent @keyup.enter="edition" v-html="editionMode.value"></td>
-        </tr>
-        <tr class="error" v-if="editionMode.error">
-          <td colspan="5">Invalid syntax</td>
-        </tr>
-      </tfoot>
-    </table>
+    <div id="app">
+      <table>
+        <thead>
+          <tr>
+            <th colspan="5">Collection's data [ <small><i v-html="collection"></i></small> ]</th>
+          </tr>
+          <tr>
+            <th>#</th>
+            <th>Value</th>
+            <th colspan="2"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(blob, key) in blobs" :key="blob">
+            <td v-html="key"></td>
+            <td v-html="blob.value"></td>
+            <td>
+              <i class="material-icons button edit" @click="edit(blob, key)">edit</i>
+              <i class="material-icons button delete" @click="remove(key)">delete</i>
+            </td>
+            <td>
+              <a @click.prevent="setExpire(blob, key)" href="#">
+                <img v-if="blob.__expire__ > -1" :title="new Date(blob.__updated_at__ + blob.__expire__ * 1000)" src="{{ url_for('static', filename='img/expiration.png') }}">
+                <img v-else src="{{ url_for('static', filename='img/plus.png') }}">
+              </a>
+            </td>
+            <td v-else></td>
+          </tr>
+        </tbody>
+        <tfoot v-if="editionMode.enable">
+          <tr>
+            <td id="editionMode" :contenteditable="editionMode.enable" colspan="4" @keydown.enter.prevent @keyup.enter="edition" v-html="editionMode.value"></td>
+          </tr>
+          <tr class="error" v-if="editionMode.error">
+            <td colspan="5">Invalid syntax</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div v-if="loading" class="loader">
+        <div class="cp-spinner cp-morph"></div>
+      </div>
+    </div>
 
     <script type="application/javascript" src="{{ url_for('static', filename='js/vuejs.min.js') }}"></script>
     <script type="application/javascript">
-      const blobs = (obj => {
-        Object.keys(obj).forEach(key => {
-          obj[key].__created_at__ = obj[key].__created_at__ * 1000;
-          obj[key].__updated_at__ = obj[key].__updated_at__ * 1000;
+      const data = (obj => {
+        Object.keys(obj.blobs).forEach(key => {
+          obj.blobs[key].__created_at__ = obj.blobs[key].__created_at__ * 1000;
+          obj.blobs[key].__updated_at__ = obj.blobs[key].__updated_at__ * 1000;
         });
 
         return obj;
       })(JSON.parse('{{ data | tojson | safe }}'));
-      console.log(blobs);
+      console.log(data);
 
       new Vue({
         el: "#app",
         data: {
-          collection: "ingredients",
+          collection: data.collection,
+          loading: false,
           editionMode: {
             enable: false,
             blob: null,
@@ -67,10 +77,11 @@
             value: null,
             error: false
           },
-          blobs: blobs
+          blobs: data.blobs
         },
         methods: {
           _put: function(url, body, method = "PUT") {
+            this.loading = true;
             return fetch(url, {
               method: method,
               headers: {
@@ -123,7 +134,8 @@
             if (response.status === 200) {
               const data = await response.json();
               if (data.error) {
-                alert(data.error);
+                this.loading = false;
+                return alert(data.error);
               }
 
               window.location.reload();
@@ -138,7 +150,8 @@
             if (response.status === 200) {
               const data = await response.json();
               if (data.error) {
-                alert(data.error);
+                this.loading = false;
+                return alert(data.error);
               }
 
               window.location.reload();
@@ -167,7 +180,8 @@
             if (response.status === 200) {
               const data = await response.json();
               if (data.error) {
-                alert(data.error);
+                this.loading = false;
+                return alert(data.error);
               }
 
               window.location.reload();

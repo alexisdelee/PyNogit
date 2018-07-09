@@ -1,0 +1,17 @@
+.loader {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: #333333;
+  opacity: 0.6;
+}
+
+.loader .cp-spinner {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  margin-top: -30px;
+  margin-left: -30px;
+}
