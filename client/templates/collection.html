@@ -38,9 +38,19 @@
             <td v-else></td>
           </tr>
         </tbody>
-        <tfoot v-if="editionMode.enable">
+        <tbody>
+          <tr class="insertMode">
+            <td contenteditable="true" @keydown.enter.prevent="insert">[ key ]</td>
+            <td contenteditable="true" @keydown.enter.prevent="insert">[ value ]</td>
+            <td>
+              <i style="color: #fff !important;" class="material-icons button insert" @click="insert">insert</i>
+            </td>
+            <td></td>
+          </tr>
+        </tbody>
+        <tfoot>
           <tr>
-            <td id="editionMode" :contenteditable="editionMode.enable" colspan="4" @keydown.enter.prevent @keyup.enter="edition" v-html="editionMode.value"></td>
+            <td id="editionMode" v-if="editionMode.enable && !editionMode.insert" :contenteditable="editionMode.enable" colspan="4" @keydown.enter.prevent @keyup.enter="edition" v-html="editionMode.value"></td>
           </tr>
           <tr class="error" v-if="editionMode.error">
             <td colspan="5">Invalid syntax</td>
@@ -65,7 +75,7 @@
       })(JSON.parse('{{ data | tojson | safe }}'));
       console.log(data);
 
-      new Vue({
+      const core = new Vue({
         el: "#app",
         data: {
           collection: data.collection,
@@ -75,7 +85,8 @@
             blob: null,
             key: null,
             value: null,
-            error: false
+            error: false,
+            isInsertion: false
           },
           blobs: data.blobs
         },
@@ -94,13 +105,52 @@
           _delete: function(url, body) {
             return this._put(url, body, "DELETE");
           },
+          insert: async function() {
+            this.editionMode = {
+              enable: false,
+              blob: null,
+              key: document.querySelector(".insertMode td:first-child").textContent,
+              value: document.querySelector(".insertMode td:nth-child(2)").textContent,
+              error: false,
+              isInsertion: true
+            };
+
+            this.editionMode.error = false;
+            if (!this.editionMode.key || !this.editionMode.value) {
+              return alert("key and value fields are required");
+            }
+
+            const data = this.parse(this.editionMode.value);
+            if (data === null) {
+              return this.editionMode.error = true;
+            }
+
+            this.editionMode.value = this.parse(this.editionMode.value).a;
+
+            const response = await this._put("/blobs", {
+              collection: this.collection,
+              key: this.editionMode.key,
+              value: this.editionMode.value
+            });
+
+            if (response.status === 200) {
+              const data = await response.json();
+              if (data.error) {
+                this.loading = false;
+                return alert(data.error);
+              }
+
+              window.location.reload();
+            }
+          },
           edit: function(blob, key) {
             this.editionMode = {
               enable: true,
               blob: blob,
               key: key,
               value: blob.value,
-              error: false
+              error: false,
+              isInsertion: false
             };
           },
           parse: function(value) {

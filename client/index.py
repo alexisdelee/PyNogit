@@ -47,6 +47,7 @@ def collection(collection):
     })
 
 # POST
+
 @app.route("/sign", methods=["POST"])
 def sign():
     try:

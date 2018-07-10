@@ -86,3 +86,8 @@ tfoot tr.error {
 tfoot td {
   text-align: left !important;
 }
+
+tbody tr.insertMode {
+  background: #4daf7c;
+  color: #fff;
+}
