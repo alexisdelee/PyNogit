@@ -43,38 +43,10 @@
       </div>
     </div>
 
-    <script type="application/javascript" src="{{ url_for('static', filename='js/vuejs.min.js') }}"></script>
     <script type="application/javascript">
       const data = JSON.parse('{{ data | tojson | safe }}');
-      console.log(data);
-
-      const core = new Vue({
-        el: "#app",
-        data: {
-          loading: false,
-          commits: data.commits
-        },
-        methods: {
-          _put: function(url, body, method = "PUT") {
-            this.loading = true;
-            return fetch(url, {
-              method: method,
-              headers: {
-                "Accept": "application/json",
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify(body)
-            });
-          },
-          parse: function(value) {
-            try {
-              return JSON.parse("{\"a\": " + value + "}");
-            } catch(e) {
-              return null;
-            }
-          }
-        }
-      });
     </script>
+    <script type="application/javascript" src="{{ url_for('static', filename='js/vuejs.min.js') }}"></script>
+    <script type="application/javascript" src="{{ url_for('static', filename='js/history.js') }}"></script>
   </body>
 </html>
