@@ -1,0 +1,33 @@
+.dropdownmenu {
+	position: fixed;
+	top: 0;
+	left: 0;
+}
+
+.dropdownmenu ul, .dropdownmenu li {
+	margin: 0;
+	padding: 0;
+}
+.dropdownmenu ul {
+	background: gray;
+	list-style: none;
+	width: 100%;
+}
+.dropdownmenu li {
+	float: left;
+	position: relative;
+	width:auto;
+}
+.dropdownmenu a {
+	background: #316f9d;
+	color: #FFFFFF;
+	display: block;
+	font: bold 12px/20px sans-serif;
+	padding: 10px 25px;
+	text-align: center;
+	text-decoration: none;
+	transition: all .25s ease;
+}
+.dropdownmenu li:hover a {
+	background: #4daf7c;
+}

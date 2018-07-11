@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>History</title>
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/csspin-morph.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/loader.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/menu.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/collection.css') }}">
+  </head>
+  <body>
+    <div id="app">
+      <nav class="dropdownmenu">
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a :href="'/collections/' + new URLSearchParams(window.location.search).get('c')">Collection</a></li>
+        </ul>
+      </nav>
+
+      <table>
+        <thead>
+          <tr>
+            <th colspan="5">Commits</th>
+          </tr>
+          <tr>
+            <th colspan="3">#</th>
+            <th colspan="2">Tags</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="commit in commits" :key="commit">
+            <td colspan="3" v-html="commit.ref"></td>
+            <td colspan="2">
+              <span v-for="tag in commit.tags" v-html="tag"></span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div v-if="loading" class="loader">
+        <div class="cp-spinner cp-morph"></div>
+      </div>
+    </div>
+
+    <script type="application/javascript" src="{{ url_for('static', filename='js/vuejs.min.js') }}"></script>
+    <script type="application/javascript">
+      const data = JSON.parse('{{ data | tojson | safe }}');
+      console.log(data);
+
+      const core = new Vue({
+        el: "#app",
+        data: {
+          loading: false,
+          commits: data.commits
+        },
+        methods: {
+          _put: function(url, body, method = "PUT") {
+            this.loading = true;
+            return fetch(url, {
+              method: method,
+              headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify(body)
+            });
+          },
+          parse: function(value) {
+            try {
+              return JSON.parse("{\"a\": " + value + "}");
+            } catch(e) {
+              return null;
+            }
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

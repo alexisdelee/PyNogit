@@ -19,16 +19,6 @@ authentication = {
 
 # DECORATORS
 
-@app.route("/", methods=["GET"])
-def home():
-    return render_template("home.html", data = {
-        "username": "" if authentication["username"] is None else authentication["username"],
-        "password": "" if authentication["password"] is None else authentication["password"],
-        "database": "" if authentication["database"] is None else authentication["database"]
-    })
-
-# GET
-
 def require_authentication(f):
     @wraps(f)
     def wrap(*args, **kwargs):
@@ -36,6 +26,16 @@ def require_authentication(f):
             return redirect(url_for("home"))
         return f(*args, **kwargs)
     return wrap
+
+# GET
+
+@app.route("/", methods=["GET"])
+def home():
+    return render_template("home.html", data = {
+        "username": "" if authentication["username"] is None else authentication["username"],
+        "password": "" if authentication["password"] is None else authentication["password"],
+        "database": "" if authentication["database"] is None else authentication["database"]
+    })
 
 @app.route("/collections/<collection>", methods=["GET"])
 @require_authentication
@@ -45,6 +45,12 @@ def collection(collection):
         "collection": collection,
         "blobs": blobs
     })
+
+@app.route("/commits", methods=["GET"])
+@require_authentication
+def commits():
+    commits = authentication["instance"].getAllTransactions(True)
+    return render_template("history.html", data = { "commits": commits })
 
 # POST
 

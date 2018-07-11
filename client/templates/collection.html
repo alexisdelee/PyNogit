@@ -6,10 +6,18 @@
 
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/csspin-morph.min.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/loader.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/menu.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/collection.css') }}">
   </head>
   <body>
     <div id="app">
+      <nav class="dropdownmenu">
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/commits?c={{ data["collection"] }}">History</a></li>
+        </ul>
+      </nav>
+
       <table>
         <thead>
           <tr>
@@ -73,7 +81,6 @@
 
         return obj;
       })(JSON.parse('{{ data | tojson | safe }}'));
-      console.log(data);
 
       const core = new Vue({
         el: "#app",
