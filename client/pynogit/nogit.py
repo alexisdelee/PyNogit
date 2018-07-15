@@ -77,7 +77,7 @@ class NoGit:
             "password": self.__credentials,
             "aes": None if self.__aes is None else Helper.Cipher.simpleEncyption(Helper.bytesToHex(self.__aes).rjust(64), self.__rawCredentials.rjust(64))
         }, "__credentials__")
-        self.savepoint("default")
+        self.savepoint(Commit.uuid())
 
     def __set_collection__(self, data, collection):
         assert type(data) is str

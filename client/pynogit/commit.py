@@ -39,7 +39,11 @@ class Commit(Git):
             return []
         return Git().shell("git cat-file -p {0}".format(tree[2])).split()[2::4]
 
+    @staticmethod
+    def uuid():
+        return str(uuid4())
+
     def commit(self):
         if self.__parentTree is None:
-            return self.shell("git commit-tree {0}".format(self.__tree), str(uuid4()))
-        return self.shell("git commit-tree {0] -p {1}".format(self.__tree, self.__parentTree), str(uuid4()))
+            return self.shell("git commit-tree {0}".format(self.__tree), Commit.uuid())
+        return self.shell("git commit-tree {0] -p {1}".format(self.__tree, self.__parentTree), Commit.uuid())
