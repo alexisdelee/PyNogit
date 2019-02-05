@@ -130,9 +130,8 @@ Avec NoGit, les transactions à la MySQL sont maintenant possibles pour une de b
 ## Application web
 
 ```shell
-pip install Flask
-pip install flask_cors
-pip install pytest
+pip3 install Flask
+pip3 install flask_cors
 
 # Windows
 "bin/run.bat"
@@ -141,8 +140,10 @@ pip install pytest
 bash bin/run.sh
 ```
 
-## Tests unitaires
+## Tests
 
 ```shell
+pip3 install pytest
+
 pytest -q tests/main.py
 ```
