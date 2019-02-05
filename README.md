@@ -16,7 +16,7 @@ Ce dépôt contient donc :
 
 Après s'être identifié, un objet NoGit contenant l'accès aux méthodes de gestion est retourné :  
 ```shell
-<instance> = NoGit(username="master", credentials="master", database="mcdo")
+<instance> = NoGit(username = "master", credentials = "master", database = "mcdo")
 ```
 
 Info : le paramètre __credentials__ (mot de passe) est facultatif, toutefois les données ne seront pas chiffrées dans le cas de son absence.  
@@ -142,8 +142,11 @@ bash bin/run.sh
 
 ## Tests
 
+Tests partiels (demandé dans le cas d'un projet)  
+
 ```shell
 pip3 install pytest
 
-pytest -q tests/main.py
+pytest tests/
+pytest -q tests/test_crud.py # for run a specific test
 ```

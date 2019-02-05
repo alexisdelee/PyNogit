@@ -1,5 +1,8 @@
-client/.idea/
 pynogit/__pycache__
 pynogit/pyaes/__pycache__
+
 client/__pycache__/
+client/pynogit
+
 tests/__pycache__/
+tests/pynogit

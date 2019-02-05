@@ -288,7 +288,7 @@ class NoGit:
     def incr(self, key, collection):
         self.incrby(key, 1, collection)
 
-    def descr(self, key, collection):
+    def decr(self, key, collection):
         self.incrby(key, -1, collection)
 
     def decrby(self, key, step, collection):
@@ -380,3 +380,6 @@ class NoGit:
         assert type(commit) is str
 
         return Commit.getAllCollections(commit)
+    
+    def purge(self):
+        Branch.purge(Helper.readable(self.__username))
