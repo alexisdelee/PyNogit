@@ -6,6 +6,12 @@ Ce dépôt contient donc :
   - un client NoGit en python  
   - une application web de gestion pour les systèmes de gestion de bases de données NoGit  
 
+## Variables d'environnement
+
+  - PYNOGIT_DB (location for the database)  
+  - PYNOGIT_HOST (host for client server)  
+  - PYNOGIT_PORT (port for client server)  
+
 ## Client
 
 Après s'être identifié, un objet NoGit contenant l'accès aux méthodes de gestion est retourné :  
@@ -125,10 +131,18 @@ Avec NoGit, les transactions à la MySQL sont maintenant possibles pour une de b
 
 ```shell
 pip install Flask
+pip install flask_cors
+pip install pytest
 
 # Windows
 "bin/run.bat"
 
 # Linux
 bash bin/run.sh
+```
+
+## Tests unitaires
+
+```shell
+pytest -q tests/main.py
 ```

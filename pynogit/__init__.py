@@ -6,3 +6,5 @@ from .nogit import NoGit
 # from .collection import Collection
 # from .document import Document
 # from .transaction import Transaction
+
+__all__ = ("NoGit")

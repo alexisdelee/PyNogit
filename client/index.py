@@ -1,8 +1,12 @@
+from os import environ
 from functools import wraps
 from flask import Flask, render_template, redirect, url_for, request
 from flask_cors import CORS
 from pynogit import NoGit
 from pynogit.helper import Helper
+
+if environ.get("PYNOGIT_HOST") is None or environ.get("PYNOGIT_PORT") is None:
+    raise Exception("PYNOGIT_HOST or PYNOGIT_PORT is undefined")
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -151,4 +155,4 @@ def delete_blob():
 #     })
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host = environ.get("PYNOGIT_HOST"), port = environ.get("PYNOGIT_PORT"))
